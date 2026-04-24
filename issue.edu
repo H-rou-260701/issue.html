@@ -1,1 +1,106 @@
+import streamlit as st
+import pandas as pd
 
+# 設定網頁標題與風格
+st.set_page_config(page_title="KGS 117雙語班-家庭領航員測驗", layout="centered")
+
+# 自定義 CSS 讓界面更漂亮
+st.markdown("""
+    <style>
+    .main { background-color: #f5f7f9; }
+    .stButton>button { width: 100%; border-radius: 20px; height: 3em; background-color: #ff4b4b; color: white; }
+    .result-box { padding: 20px; border-radius: 15px; background-color: white; border-left: 10px solid #ff4b4b; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
+    </style>
+    """, unsafe_allow_html=True)
+
+# 標題與簡介
+st.title("⚓ 家庭領航員：教養人格測驗")
+st.subheader("雄女 117 級雙語實驗班 議題探究成果發表")
+st.write("這不是一份考卷，而是一場關於家庭權力與溝通的探索。請依照直覺選擇最接近您真實反應的選項。")
+
+st.divider()
+
+# 定義維度分數 (A/D, P/E, C/F, S/I)
+scores = {"Power": 0, "Resource": 0, "Conflict": 0, "Success": 0}
+
+# --- 題目設計 ---
+# 1. 職業觀 (P/E)
+q1 = st.radio(
+    "Q1：孩子突然宣布想當「全職電競選手」或「登山導遊」，您的第一反應是？",
+    ["務實分析：詢問薪資行情與職涯壽命，擔心是否能養活自己。", 
+     "夢想支持：只要他有熱情，願意一起研究需要的裝備與訓練。"]
+)
+if "務實" in q1: scores["Resource"] -= 1
+else: scores["Resource"] += 1
+
+# 2. 決策權 (A/D)
+q2 = st.radio(
+    "Q2：當你與孩子意見僵持不下時，最後的結局通常是？",
+    ["由家長拍板定案，認為長輩經驗較豐富，孩子以後會懂。", 
+     "持續對話，直到雙方磨合出一個都能接受的折衷方案。"]
+)
+if "拍板" in q2: scores["Power"] -= 1
+else: scores["Power"] += 1
+
+# 3. 情感觀 (S/I)
+q3 = st.radio(
+    "Q3：若孩子在談戀愛且成績退步了，您會？",
+    ["嚴肅警告：要求先中斷聯絡，證明能顧好成績後再交往。", 
+     "關懷引導：不怪罪感情，先了解學習遇到的困難並給予支持。"]
+)
+if "警告" in q3: scores["Success"] -= 1
+else: scores["Success"] += 1
+
+# 4. 補習觀 (P/E)
+q4 = st.radio(
+    "Q4：關於補習，您更認同哪一種說法？",
+    ["這是投資：沒進步就是浪費錢，應考慮停止或換班。", 
+     "這是過程：即使分數沒升，有良好的學習環境與習慣也有價值。"]
+)
+if "投資" in q4: scores["Resource"] -= 1
+else: scores["Resource"] += 1
+
+# 5. 開放式問題：深度溝通
+st.divider()
+st.subheader("💬 深度對話")
+communication_barrier = st.text_area("您認為在家庭中進行「深度溝通」（聊心事、價值觀）最大的阻礙是什麼？")
+
+# --- 結果計算邏輯 ---
+if st.button("查看我的領航人格"):
+    st.balloons()
+    
+    # 判斷型號 (簡單化邏輯)
+    res_p = "務實 (Pragmatic)" if scores["Resource"] <= 0 else "體驗 (Experiential)"
+    res_v = "權威 (Authority)" if scores["Power"] <= 0 else "民主 (Democratic)"
+    
+    # 人格命名
+    if scores["Resource"] <= 0 and scores["Power"] <= 0:
+        name = "🏰 大理石城堡 (Marble Fortress)"
+        desc = "您非常看重安全感與穩定，願意提供最好的資源，但有時會讓孩子感到有些壓抑。"
+        advice = "建議：試著在不影響安全的前提下，給孩子一個『可以失敗』的小空間。"
+    elif scores["Resource"] > 0 and scores["Power"] > 0:
+        name = "🎈 熱氣球旅行 (Hot Air Balloon)"
+        desc = "您追求自由與體驗，與孩子像朋友一樣相處，家庭氣氛非常輕鬆。"
+        advice = "建議：在放手的同時，也要記得在孩子迷惘時提供明確的導航建議。"
+    elif scores["Resource"] <= 0 and scores["Power"] > 0:
+        name = "⚖️ 精密天秤 (Precision Balance)"
+        desc = "您重視實際成效，但願意溝通。您在現實與理想之間努力尋找平衡點。"
+        advice = "建議：溝通時可以多聊聊『情緒』，而不只是『解決問題的方法』。"
+    else:
+        name = "🌟 夢想啦啦隊 (Dream Cheerleader)"
+        desc = "您對孩子的自主權給予極大尊重，比起成績，您更在乎他的個人特質。"
+        advice = "建議：有時孩子也需要你堅定的社會經驗作為參考，不要怕給出你的判斷。"
+
+    # 顯示結果
+    st.markdown(f"""
+    <div class="result-box">
+        <h3>您的領航人格是：{name}</h3>
+        <p><b>核心傾向：</b> {res_p} ＋ {res_v}</p>
+        <p><b>性格特質：</b> {desc}</p>
+        <p style="color: #ff4b4b;"><b>{advice}</b></p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 顯示溝通反思
+    if communication_barrier:
+        st.info(f"關於您提到的溝通阻礙：『{communication_barrier}』，這正是我們發表會想探討的核心議題。感謝您的分享！")
